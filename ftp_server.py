@@ -29,8 +29,8 @@ class FtpServer:
     def __init__(self):
         rootdir = './ftp'
         list = os.listdir(rootdir)
-        for i in range(0, len(list)):
-            FtpServer.bank.add(list[i])
+        for i in list:
+            FtpServer.bank.add(i)
         print(FtpServer.bank)
 
     def find_file(self, cli):

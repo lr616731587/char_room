@@ -18,41 +18,49 @@ class FtpServer(object):
             name = input('选择需要上传的文件')
             name1 = name.split('/')[-1]
             cli.send(name1.encode())
-            f = open('{}'.format(name), 'rb')
-            while True:
-                a = f.read(1024)
-                if not a:
-                    time.sleep(0.1)
-                    cli.send('##'.encode())
-                    break
-                cli.send(a)
-            f.close()
-            print(cli.recv(1024).decode())
+            re = cli.recv(1024).decode()
+            if re == 'NG':
+                print('文件已存在')
+                return
+            else:
+                f = open('{}'.format(name), 'rb')
+                while True:
+                    a = f.read(1024)
+                    if not a:
+                        time.sleep(0.1)
+                        cli.send('##'.encode())
+                        break
+                    cli.send(a)
+                f.close()
+                print(cli.recv(1024).decode())
         else:
             print('请求错误')
 
     def download(self, cli, data):
         r = self.request(cli, data)
         print(r)
-        name = input('请输入需要下载的书籍')
-        cli.send(name.encode())
         while True:
-            addr = input('请选择下载位置')
-            path = os.path.join(addr, name)
-            if os.path.exists(path):
-                print('文件已存在')
+            name = input('请输入需要下载的书籍')
+            cli.send(name.encode())
+            if cli.recv(1024).decode() != 'ng':
+                addr = input('请选择下载位置')
+                path = os.path.join(addr, name)
+                print(path)
+                if os.path.exists(path):
+                    print('文件已存在')
+                else:
+                    print(path, 'ok')
+                    break
             else:
-                print(path, 'ok')
-                break
+                print('文件不存在')
         f = open(path, 'wb')
         while True:
-            data = cli.recv(1024)
-            print(data)
-            if data == b'##':
-                print('下载结束'.encode())
+            dat = cli.recv(1024)
+            if dat == b'##':
+                print('下载结束')
                 break
             else:
-                f.write(data)
+                f.write(dat)
 
 
 class Client():
